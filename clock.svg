@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  clock.svg
-  Self-contained SVG clock (no seconds hand). Embedded JS updates minute/hour every minute.
-  Save as clock.svg and open in a browser. Note: many Markdown renderers strip <script> tags.
+<!-- clock.svg
+     Dynamic SVG clock converted from a canvas example.
+     Save as clock.svg and open in a browser. Note: embedded <script> can be removed/stripped by some MD renderers.
 -->
 <svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="400" height="400" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
-  <desc>Dynamic SVG clock — hour and minute hands, updates every minute via embedded JS.</desc>
+     width="512" height="512"
+     viewBox="0 0 512 512"
+     preserveAspectRatio="xMidYMid meet">
+
+  <desc>Animated SVG clock with hour, minute and smooth second hands.</desc>
 
   <defs>
-    <!-- simple glow filter -->
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="6" result="blur"/>
       <feMerge>
@@ -19,182 +19,175 @@
       </feMerge>
     </filter>
 
-    <!-- rim gradient -->
-    <radialGradient id="rimGrad" cx="35%" cy="30%" r="80%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
-      <stop offset="70%" stop-color="#c0c0c0" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#9a9a9a" stop-opacity="1"/>
-    </radialGradient>
-
-    <!-- numbers style -->
     <style type="text/css"><![CDATA[
-      .face { fill: #000000; }
-      .rim { fill: url(#rimGrad); }
-      .tick { stroke: rgba(0,235,255,0.85); stroke-width: 2; }
-      .minor { stroke: rgba(0,235,255,0.45); stroke-width: 1; }
-      .num { fill: url(#numGrad); font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; font-weight: 600; font-size: 20px; text-anchor: middle; dominant-baseline: middle; fill: #00eaff; }
-      .hand-hour { fill: #c0c0c0; }
-      .hand-minute { fill: #00eaff; }
-      .center-cap { fill: #00eaff; stroke: rgba(0,0,0,0.12); stroke-width:1.5; }
-      .label { fill: rgba(255,255,255,0.9); font-size:12px; font-family: sans-serif; text-anchor:middle; }
+      .bg { fill: #111; }
+      .rim { fill: #c0c0c0; }
+      .face { fill: #000; }
+      .majorTick { stroke: #00eaff; stroke-width: 3; stroke-linecap: round; }
+      .minorTick { stroke: rgba(0,200,255,0.45); stroke-width: 1; stroke-linecap: round; }
+      .nums { fill: #00eaff; font-family: sans-serif; font-weight: 600; font-size: 20px; text-anchor: middle; dominant-baseline: middle; }
+      .hourHand { fill: #c0c0c0; }
+      .minuteHand { fill: #00eaff; }
+      .secondHand { stroke: #ff6b6b; stroke-width: 2; stroke-linecap: round; }
+      .centerCap { fill: #fff; }
+      .timeLabel { fill: #ffffff; font-family: sans-serif; font-size: 14px; text-anchor: middle; }
     ]]></style>
   </defs>
 
-  <!-- background (transparent by default) -->
-  <rect width="100%" height="100%" fill="transparent"/>
+  <!-- background (optional) -->
+  <rect width="100%" height="100%" class="bg" />
 
-  <!-- center coordinates -->
-  <g id="clock" transform="translate(200,200)">
+  <!-- center transform group: put origin at 256,256 -->
+  <g id="clock" transform="translate(256,256)">
 
-    <!-- rim -->
-    <circle r="160" class="rim" filter="url(#glow)"/>
+    <!-- rim glow -->
+    <circle r="210" class="rim" filter="url(#glow)" />
 
     <!-- face -->
-    <circle r="140" class="face"/>
+    <circle r="180" class="face" />
 
-    <!-- concentric radar-style rings -->
-    <g id="rings">
-      <g stroke="rgba(0,235,255,0.12)">
-        <circle r="28" fill="none" stroke-width="1"/>
-        <circle r="56" fill="none" stroke-width="1"/>
-        <circle r="84" fill="none" stroke-width="1"/>
-        <circle r="112" fill="none" stroke-width="1"/>
-      </g>
+    <!-- concentric rings -->
+    <g id="rings" stroke="rgba(0,200,255,0.12)" fill="none">
+      <circle r="30" />
+      <circle r="60" />
+      <circle r="90" />
+      <circle r="120" />
+      <circle r="150" />
     </g>
 
-    <!-- 12 sector radial lines -->
-    <g id="sectors" stroke="rgba(0,235,255,0.14)" stroke-width="2">
-      <!-- draw 12 lines -->
-      <!-- lines start at center to outer radius -->
-      <!-- using loop would be nicer but SVG can't loop; positions below computed for 12 lines -->
-      <line x1="0" y1="0" x2="0" y2="-140"/>
-      <line x1="0" y1="0" x2="115.38" y2="-70"/>
-      <line x1="0" y1="0" x2="140" y2="0"/>
-      <line x1="0" y1="0" x2="115.38" y2="70"/>
-      <line x1="0" y1="0" x2="0" y2="140"/>
-      <line x1="0" y1="0" x2="-115.38" y2="70"/>
-      <line x1="0" y1="0" x2="-140" y2="0"/>
-      <line x1="0" y1="0" x2="-115.38" y2="-70"/>
-      <line x1="0" y1="0" x2="70" y2="-115.38"/>
-      <line x1="0" y1="0" x2="115.38" y2="-70" opacity="0"/>
+    <!-- 12 major ticks (hours) -->
+    <g id="majorTicks">
+      <!-- draw using rotation groups for clarity -->
+      <g transform="rotate(0)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(30)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(60)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(90)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(120)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(150)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(180)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(210)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(240)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(270)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(300)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
+      <g transform="rotate(330)"><line class="majorTick" x1="0" y1="-140" x2="0" y2="-170"/></g>
     </g>
 
-    <!-- minute ticks (drawn by groups of rotated lines for clarity) -->
-    <g id="ticks">
-      <!-- we draw 60 ticks via repeated <use> would be ideal, but to keep SVG concise we'll draw major ticks and minor ones -->
-      <!-- Major (hour) ticks -->
-      <g id="majors" stroke="#00eaff" stroke-opacity="0.95" stroke-width="3">
-        <g transform="rotate(0)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(30)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(60)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(90)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(120)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(150)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(180)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(210)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(240)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(270)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(300)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-        <g transform="rotate(330)"><line x1="0" y1="-110" x2="0" y2="-136"/></g>
-      </g>
+    <!-- minor ticks (every 6 degrees) -->
+    <g id="minorTicks">
+      <!-- we generate a subset for readability; full 60 can be added similarly -->
+      <g transform="rotate(6)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(12)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(18)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(24)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
 
-      <!-- minor ticks (every minute, lighter) -->
-      <g id="minors" stroke="rgba(0,235,255,0.4)" stroke-width="1">
-        <!-- generate by placing a rotated group for each 6-degree step -->
-        <!-- we list a handful to illustrate; this SVG remains compact; you may extend if you want full 60 explicit lines -->
-        <g transform="rotate(6)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(12)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(18)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(24)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(36)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(42)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(48)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <g transform="rotate(54)"><line x1="0" y1="-120" x2="0" y2="-136"/></g>
-        <!-- (you can add remaining if needed) -->
-      </g>
+      <g transform="rotate(36)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(42)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(48)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(54)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+
+      <g transform="rotate(66)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(72)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(78)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+      <g transform="rotate(84)"><line class="minorTick" x1="0" y1="-146" x2="0" y2="-170"/></g>
+
+      <!-- (repeat similarly to complete 60 if needed) -->
     </g>
 
     <!-- numerals -->
-    <g id="numbers" font-size="20" fill="#00eaff" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle">
-      <text x="0" y="-95" class="num">12</text>
-      <text x="95" y="-55" class="num">1</text>
-      <text x="125" y="0" class="num">2</text>
-      <text x="95" y="55" class="num">3</text>
-      <text x="0" y="95" class="num">6</text>
-      <text x="-95" y="55" class="num">9</text>
-      <!-- fill remaining numerals -->
-      <text x="65" y="-80" class="num">11</text>
-      <text x="120" y="-25" class="num">1</text>
-      <text x="120" y="25" class="num">2</text>
-      <text x="65" y="80" class="num">5</text>
-      <text x="-65" y="80" class="num">7</text>
-      <text x="-120" y="25" class="num">8</text>
-      <text x="-120" y="-25" class="num">10</text>
+    <g id="numbers" class="nums">
+      <text x="0"   y="-115">12</text>
+      <text x="75"  y="-92">1</text>
+      <text x="115" y="-45">2</text>
+      <text x="140" y="0">3</text>
+      <text x="115" y="45">4</text>
+      <text x="75"  y="92">5</text>
+      <text x="0"   y="115">6</text>
+      <text x="-75" y="92">7</text>
+      <text x="-115" y="45">8</text>
+      <text x="-140" y="0">9</text>
+      <text x="-115" y="-45">10</text>
+      <text x="-75"  y="-92">11</text>
     </g>
 
-    <!-- gauge for radar-like fill (optional) -->
-    <g id="radarGlow" opacity="0.06">
-      <circle r="140" fill="url(#rimGrad)"/>
-    </g>
-
-    <!-- hour hand group -->
+    <!-- hour hand group (rotate the group) -->
     <g id="hourHand" transform="rotate(0)">
-      <path class="hand-hour" d="M -8 0 L -6 -60 L 0 -75 L 6 -60 L 8 0 Z" />
+      <!-- hour hand path centered at origin, pointing upward initially -->
+      <path class="hourHand" d="M -8 0 L -6 -60 L 0 -75 L 6 -60 L 8 0 Z" />
     </g>
 
     <!-- minute hand group -->
     <g id="minuteHand" transform="rotate(0)">
-      <path class="hand-minute" d="M -6 0 L -4 -95 L 0 -115 L 4 -95 L 6 0 Z" />
+      <path class="minuteHand" d="M -6 0 L -4 -95 L 0 -115 L 4 -95 L 6 0 Z" />
+    </g>
+
+    <!-- second hand group -->
+    <g id="secondHand" transform="rotate(0)">
+      <line class="secondHand" x1="0" y1="10" x2="0" y2="-150" />
     </g>
 
     <!-- center cap -->
-    <circle r="8" class="center-cap"/>
+    <circle r="8" class="centerCap" />
 
-    <!-- optional bottom label -->
-    <text x="0" y="170" class="label" id="timeLabel">--:--</text>
+    <!-- time label under the clock -->
+    <text id="timeText" class="timeLabel" x="0" y="180">--:--:--</text>
+
   </g>
 
-  <!-- embedded script: sets the rotation of hands based on local time and updates every 5-10s (minutely sync) -->
+  <!-- embedded script for animation -->
   <script><![CDATA[
-    (function(){
-      // Utility: set element rotation (deg)
-      function setRotation(el, deg) {
-        if (!el) return;
-        el.setAttribute('transform', 'rotate(' + deg + ')');
+    (function () {
+      // get elements
+      const hourG = document.getElementById('hourHand');
+      const minuteG = document.getElementById('minuteHand');
+      const secondG = document.getElementById('secondHand');
+      const timeText = document.getElementById('timeText');
+
+      // compute angles (degrees)
+      function computeAngles(d) {
+        const H = d.getHours();
+        const M = d.getMinutes();
+        const S = d.getSeconds();
+        const MS = d.getMilliseconds();
+        // fraction seconds including ms for smooth second hand
+        const Sf = S + (MS / 1000);
+        const minuteAngle = ((M + Sf / 60) / 60) * 360; // 0..360
+        const hourAngle = (((H % 12) + (M / 60) + (Sf / 3600)) / 12) * 360;
+        const secondAngle = (Sf / 60) * 360;
+        return { hourAngle, minuteAngle, secondAngle, H, M, S };
       }
 
-      function updateHands(date) {
-        date = date || new Date();
-        var H = date.getHours();
-        var M = date.getMinutes();
-        // compute angles: 12 o'clock at -90deg (we visually align by rotating groups)
-        var minuteAngle = (M / 60) * 360;
-        var hourAngle = ((H % 12) + M/60) / 12 * 360;
-        // set rotations (SVG rotation rotates around group origin (0,0) here which is center)
-        setRotation(document.getElementById('minuteHand'), minuteAngle);
-        setRotation(document.getElementById('hourHand'), hourAngle);
-        // update textual label
-        var hh = String(H).padStart(2,'0'), mm = String(M).padStart(2,'0');
-        var lbl = document.getElementById('timeLabel');
-        if (lbl) lbl.textContent = hh + ':' + mm;
-      }
-
-      // initial paint based on current time
-      updateHands(new Date());
-
-      // sync: check every 5 seconds and update if minute changed.
-      var lastMinute = (new Date()).getMinutes();
-      setInterval(function(){
-        var now = new Date();
-        if (now.getMinutes() !== lastMinute) {
-          lastMinute = now.getMinutes();
-          updateHands(now);
+      // apply rotation: since our groups are located at center, rotate(angle) suffices
+      function applyAngles(a) {
+        if (hourG) hourG.setAttribute('transform', 'rotate(' + a.hourAngle + ')');
+        if (minuteG) minuteG.setAttribute('transform', 'rotate(' + a.minuteAngle + ')');
+        if (secondG) secondG.setAttribute('transform', 'rotate(' + a.secondAngle + ')');
+        if (timeText) {
+          const hh = String(a.H).padStart(2, '0');
+          const mm = String(a.M).padStart(2, '0');
+          const ss = String(a.S).padStart(2, '0');
+          timeText.textContent = hh + ':' + mm + ':' + ss;
         }
-      }, 5000);
+      }
 
-      // also attempt to compensate if page becomes visible after hidden (like tab switching)
-      document.addEventListener('visibilitychange', function(){
-        if (!document.hidden) updateHands(new Date());
+      // smooth animation via requestAnimationFrame
+      let lastMinute = (new Date()).getMinutes();
+      function tick() {
+        const now = new Date();
+        const a = computeAngles(now);
+        applyAngles(a);
+        // update more frequently for smooth seconds
+        requestAnimationFrame(tick);
+      }
+
+      // start
+      tick();
+
+      // ensure sync when tab becomes visible again
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+          const now = new Date();
+          applyAngles(computeAngles(now));
+        }
       });
     })();
   ]]></script>
