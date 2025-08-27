@@ -24,7 +24,8 @@ const ctx = c.getContext('2d');
 const cx = c.width/2, cy = c.height/2, radius = 200;
 
 function draw(now) {
-  const d = new Date(now || Date.now());
+  //const d = new Date(now || Date.now());
+  const d = Date.now();
   const H = d.getHours(), M = d.getMinutes(), S = d.getSeconds() + d.getMilliseconds()/1000;
   ctx.clearRect(0,0,c.width,c.height);
 
@@ -52,26 +53,40 @@ function draw(now) {
   const hourAngle = ((H%12) + M/60 + S/3600)/12 * Math.PI*2;
   const secondAngle = S/60 * Math.PI*2;
 
-  // hour
+  // hour hand
   ctx.save();
-  ctx.translate(cx,cy);
-  ctx.rotate(hourAngle )//- Math.PI/2);
-  ctx.fillStyle = '#c0c0c0';
-  ctx.fillRect(-8, -radius*0.42, 16, radius*0.42);
+  ctx.translate(cx, cy);
+  ctx.rotate(hourAngle )//+ Math.PI / 2);
+  ctx.fillStyle = '#3b2f2f';
+  ctx.beginPath();
+  ctx.moveTo(-12, 0);
+  ctx.lineTo(-8, -radius * 0.46);
+  ctx.lineTo(0, -radius * 0.55);
+  ctx.lineTo(8, -radius * 0.46);
+  ctx.lineTo(12, 0);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 
-  // minute
+  // minute hand
   ctx.save();
-  ctx.translate(cx,cy);
-  ctx.rotate(minuteAngle )//- Math.PI/2);
-  ctx.fillStyle = '#00eaff';
-  ctx.fillRect(-6, -radius*0.64, 12, radius*0.64);
+  ctx.translate(cx, cy);
+  ctx.rotate(minuteAngle )//+ Math.PI / 2);
+  ctx.fillStyle =  '#2b2b2b';
+  ctx.beginPath();
+  ctx.moveTo(-8, 0);
+  ctx.lineTo(-6, -radius * 0.72);
+  ctx.lineTo(0, -radius * 0.82);
+  ctx.lineTo(6, -radius * 0.72);
+  ctx.lineTo(8, 0);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 
   // second (thin)
   ctx.save();
   ctx.translate(cx,cy);
-  ctx.rotate(secondAngle - Math.PI/2);
+  ctx.rotate(secondAngle )//- Math.PI/2);
   ctx.strokeStyle = '#ff6b6b';
   ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(0,10); ctx.lineTo(0,-radius*0.82); ctx.stroke();
