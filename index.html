@@ -24,8 +24,8 @@ const ctx = c.getContext('2d');
 const cx = c.width/2, cy = c.height/2, radius = 200;
 
 function draw(now) {
-  //const d = new Date(now || Date.now());
-  const d = Date.now();
+  const d = new Date(now || Date.now());
+  //const d = Date.now();
   const H = d.getHours(), M = d.getMinutes(), S = d.getSeconds() + d.getMilliseconds()/1000;
   ctx.clearRect(0,0,c.width,c.height);
 
