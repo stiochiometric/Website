@@ -55,7 +55,7 @@ function draw(now) {
   // hour
   ctx.save();
   ctx.translate(cx,cy);
-  ctx.rotate(hourAngle - Math.PI/2);
+  ctx.rotate(hourAngle )//- Math.PI/2);
   ctx.fillStyle = '#c0c0c0';
   ctx.fillRect(-8, -radius*0.42, 16, radius*0.42);
   ctx.restore();
@@ -63,7 +63,7 @@ function draw(now) {
   // minute
   ctx.save();
   ctx.translate(cx,cy);
-  ctx.rotate(minuteAngle - Math.PI/2);
+  ctx.rotate(minuteAngle )//- Math.PI/2);
   ctx.fillStyle = '#00eaff';
   ctx.fillRect(-6, -radius*0.64, 12, radius*0.64);
   ctx.restore();
